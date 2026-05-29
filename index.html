@@ -2266,8 +2266,26 @@ if(org.ideas){
   }
 
   // Filters — all conditions are additive (chip + language pills + search + dropdowns compose)
+  function getSearchQuery() {
+    return (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
+  }
+
+  function syncSearchInputs(value) {
+    const normalizedValue = value || '';
+    const searchInput = document.getElementById('searchInput');
+    const heroSearch = document.getElementById('hero-search');
+
+    if (searchInput && searchInput.value !== normalizedValue) {
+      searchInput.value = normalizedValue;
+    }
+
+    if (heroSearch && heroSearch.value !== normalizedValue) {
+      heroSearch.value = normalizedValue;
+    }
+  }
+
   function applyFilters() {
-    const query = document.getElementById('searchInput').value.toLowerCase();
+    const query = getSearchQuery();
     const cat = document.getElementById('categoryFilter').value;
     const comp = document.getElementById('complexityFilter').value;
 
@@ -2297,11 +2315,10 @@ if(org.ideas){
   }
 
   window.clearAllFilters = function() {
-    document.getElementById('searchInput').value = '';
+    syncSearchInputs('');
     document.getElementById('categoryFilter').value = 'all';
     document.getElementById('complexityFilter').value = 'all';
-    const heroSearch = document.getElementById('hero-search');
-    if (heroSearch) heroSearch.value = '';
+    activeChip = null;
     
     // Reset chips
     document.querySelectorAll('.filter-chip').forEach(chip => {
@@ -2313,7 +2330,10 @@ if(org.ideas){
     renderOrgs(true);
   };
 
-  document.getElementById('searchInput').addEventListener('input', applyFilters);
+  document.getElementById('searchInput').addEventListener('input', (e) => {
+    syncSearchInputs(e.target.value);
+    applyFilters();
+  });
   document.getElementById('categoryFilter').addEventListener('change', applyFilters);
   document.getElementById('complexityFilter').addEventListener('change', applyFilters);
   document.getElementById('mentorSearchInput')?.addEventListener('input', renderMentorFinder);
@@ -2334,7 +2354,7 @@ if(org.ideas){
 
   // Hero Search Link
   document.getElementById('hero-search').addEventListener('input', (e) => {
-    document.getElementById('searchInput').value = e.target.value;
+    syncSearchInputs(e.target.value);
     document.getElementById('orgs').scrollIntoView({ behavior: 'smooth' });
     applyFilters();
   });
